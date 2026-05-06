@@ -93,11 +93,11 @@ const MILESTONES = [
   { date:"Jun 13",                 type:"bonus",     color:"#ffd166", icon:"⭐", title:"Bonus-Special-1",     sub:"Ancestral & Generational Trauma Healing",         act:[{icon:"🌟",t:"Special Bonus: Ancestral & Generational Trauma Healing",d:"Ancestral & Generational Trauma Healing",tm:"Self-paced"}],                     note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Bonus-Special-1"}] },
   { date:"Jun 17",                 type:"reflection",color:"#a78bfa", icon:"🪞", title:"Weekly Reflection-7", sub:"Weekly Check-in",                                 act:[{icon:"✍️",t:"Weekly Reflection-7",d:"Reflect on your wins, insights, and areas to improve.",tm:"Wednesday"}],                                          note:[] },
   { date:"Jun 19",                 type:"module",    color:"#ff6b9d", icon:"📚", title:"Module-8",            sub:"Energetic Alignment & Daily Rituals",             act:[{icon:"📖",t:"Module-8: Energetic Alignment & Daily Rituals",d:"Energetic Alignment & Daily Rituals",tm:"Self-paced"}],                                  note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Module-8"}] },
-  { date:"Jun 20",                 type:"bonus",     color:"#ffd166", icon:"⭐", title:"Bonus-Special-2",     sub:"Bonus Special-2",                                 act:[{icon:"🌟",t:"Special Bonus-2",d:"Exclusive bonus content on Tagmango Portal.",tm:"Self-paced"}],                                                          note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Bonus-Special-2"}] },
+  { date:"Jun 20",                 type:"bonus",     color:"#ffd166", icon:"⭐", title:"Bonus-Special-2",     sub:"Guided Meditation on Anxiety & Stress Relief",    act:[{icon:"🌟",t:"Special Bonus-2: Guided Meditation on Anxiety & Stress Relief",d:"Guided Meditation on Anxiety & Stress Relief",tm:"Self-paced"}],           note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Bonus-Special-2"}] },
   { date:"Jun 21",                 type:"coaching",  color:"#06d6a0", icon:"🎙️",title:"Coaching Call (Eve)", sub:"Group Coaching",                                  act:[{icon:"🎙️",t:"Coaching Call – Evening",d:"Live group coaching.",tm:"7:00 – 9:00 PM"}],                                                                   note:[{icon:"📞",t:"Coaching Calls",d:"All 6 coaching calls on Sunday 9AM–11AM or 7PM–9PM."}] },
   { date:"Jun 24",                 type:"reflection",color:"#a78bfa", icon:"🪞", title:"Weekly Reflection-8", sub:"Weekly Check-in",                                 act:[{icon:"✍️",t:"Weekly Reflection-8",d:"Reflect on your wins, insights, and areas to improve.",tm:"Wednesday"}],                                          note:[] },
   { date:"Jun 26",                 type:"module",    color:"#ff6b9d", icon:"📚", title:"Module-9",            sub:"Embodiment of the Future Self",                   act:[{icon:"📖",t:"Module-9: Embodiment of the Future Self",d:"Embodiment of the Future Self",tm:"Self-paced"}],                                            note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Module-9"}] },
-  { date:"Jun 27",                 type:"bonus",     color:"#ffd166", icon:"⭐", title:"Bonus-Special-3",     sub:"Bonus Special-3",                                 act:[{icon:"🌟",t:"Special Bonus-3",d:"Exclusive bonus content on Tagmango Portal.",tm:"Self-paced"}],                                                          note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Bonus-Special-3"}] },
+  { date:"Jun 27",                 type:"bonus",     color:"#ffd166", icon:"⭐", title:"Bonus-Special-3",     sub:"Guided Meditation on Letting Go",                 act:[{icon:"🌟",t:"Special Bonus-3: Guided Meditation on Letting Go",d:"Guided Meditation on Letting Go",tm:"Self-paced"}],                                    note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Bonus-Special-3"}] },
   { date:"Jun 30",                 type:"qa",        color:"#74b9ff", icon:"❓", title:"Q&A -4",              sub:"Live Q&A",                                        act:[{icon:"❓",t:"Q&A Session-4",d:"Live Q&A session.",tm:"7:00 – 8:00 PM"}],                                                                                  note:[{icon:"📞",t:"Q&A Sessions",d:"6 Q&A sessions total — 2 per month on weekdays, 7PM–8PM."}] },
   // ── JULY ──
   { date:"Jul 1",  mL:"July 2026", type:"reflection",color:"#a78bfa", icon:"🪞", title:"Weekly Reflection-9", sub:"Weekly Check-in",                                 act:[{icon:"✍️",t:"Weekly Reflection-9",d:"Reflect on your wins, insights, and areas to improve.",tm:"Wednesday"}],                                          note:[] },
@@ -413,10 +413,14 @@ function showDetail(m) {
   if (m.note.length) {
     html += `<div class="dt-section"><div class="dt-section-label">Notes</div>`;
     m.note.forEach(n => {
+      const isAccess = n.t === 'Access';
       html += `
         <div class="info-card" style="border-color:${m.color}33;">
           <div class="info-card-icon">${n.icon}</div>
-          <div><h4>${n.t}</h4><p>${n.d}</p></div>
+          <div style="width:100%">
+            <h4>${n.t}</h4><p>${n.d}</p>
+            ${isAccess ? `<a href="https://masterclass.holistictherapistgayathri.com/web/login" target="_blank" rel="noopener" class="tagmango-btn" style="--btn-color:${m.color}">Click here to access Tagmango Portal &#8594;</a>` : ''}
+          </div>
         </div>`;
     });
     html += `</div>`;
