@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Master Your Destiny</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<audio id="clickSound" src="click.mp3" preload="auto"></audio>
+<div class="stars-bg"></div>
+
+<!-- ═══════════════ ROADMAP VIEW ═══════════════ -->
+<div class="view" id="rm-view">
+
+  <!-- sticky header -->
+  <div class="rm-header fu">
+    <div class="rm-tag">May – July 2026</div>
+    <div class="rm-title">Master Your Destiny</div>
+    <div class="rm-sub">Scroll down · Tap a date to explore</div>
+  </div>
+
+  <!-- legend -->
+  <div class="legend fu2">
+    <div class="lpill"><span class="ldot" style="background:#ff6b9d"></span>Module</div>
+    <div class="lpill"><span class="ldot" style="background:#ffd166"></span>Bonus</div>
+    <div class="lpill"><span class="ldot" style="background:#06d6a0"></span>Coaching</div>
+    <div class="lpill"><span class="ldot" style="background:#74b9ff"></span>Q&amp;A</div>
+    <div class="lpill"><span class="ldot" style="background:#a78bfa"></span>Reflect</div>
+  </div>
+
+  <!-- road canvas -->
+  <div class="rm-canvas-wrap fu3">
+    <div class="rm-canvas" id="rmCanvas">
+      <svg class="rm-svg" id="rmSvg" xmlns="http://www.w3.org/2000/svg">
+        <path class="r-road" id="roadPath"/>
+        <path class="r-dash" id="dashPath"/>
+      </svg>
+      <div id="milestones"></div>
+    </div>
+  </div>
+
+</div><!-- /rm-view -->
+
+<!-- ═══════════════ DETAIL VIEW ═══════════════ -->
+<div class="view hidden" id="dt-view">
+  <div class="dt-topbar">
+    <button class="back-btn" onclick="goBack()">←</button>
+    <div class="topbar-title" id="dtTopTitle"></div>
+  </div>
+  <div class="dt-inner">
+    <div class="dt-hero fu" id="dtHero"></div>
+    <div id="dtBody"></div>
+    <div style="height:60px"></div>
+  </div>
+</div>
+
+<script>
+/* ─────────────────────────────────────────────
+   MILESTONE DATA
+───────────────────────────────────────────── */
+const MILESTONES = [
+  // ── MAY ──
+  { date:"May 1",  mL:"May 2026",  type:"module",    color:"#ff6b9d", icon:"📚", title:"Module-1",            sub:"Foundations",        act:[{icon:"📖",t:"Module-1: Foundations",d:"Core principles that set the stage for everything ahead.",tm:"Self-paced"}],         note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Module-1"}] },
+  { date:"May 2",                  type:"bonus",     color:"#ffd166", icon:"⭐", title:"Bonus-1",             sub:"Exclusive Content",  act:[{icon:"🎁",t:"Bonus-1: Mindset Mastery",d:"Exclusive bonus content uploaded to Tagmango Portal.",tm:"Self-paced"}],           note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Bonus-1"}] },
+  { date:"May 3",                  type:"coaching",  color:"#06d6a0", icon:"🎙️",title:"Coaching Call (Eve)", sub:"Group Coaching",     act:[{icon:"🎙️",t:"Coaching Call – Evening",d:"Live group coaching. Bring your wins and challenges.",tm:"7:00 – 9:00 PM"}],      note:[{icon:"📞",t:"Coaching Calls",d:"All 6 coaching calls on Sunday 9AM–11AM or 7PM–9PM."}] },
+  { date:"May 5",                  type:"qa",        color:"#74b9ff", icon:"❓", title:"Q&A -1",              sub:"Live Q&A",           act:[{icon:"❓",t:"Q&A Session-1",d:"Open Q&A with the coaching team. Submit questions in advance.",tm:"Weekday – scheduled"}],    note:[{icon:"📞",t:"Q&A Sessions",d:"6 Q&A sessions total — 2 per month on weekdays."}] },
+  { date:"May 6",                  type:"reflection",color:"#a78bfa", icon:"🪞", title:"Weekly Reflection-1", sub:"Weekly Check-in",    act:[{icon:"✍️",t:"Weekly Reflection-1",d:"Reflect on your wins, insights, and areas to improve.",tm:"Wednesday"}],              note:[] },
+  { date:"May 8",                  type:"module",    color:"#ff6b9d", icon:"📚", title:"Module-2",            sub:"Deep Dive",          act:[{icon:"📖",t:"Module-2: Deep Dive",d:"Advanced strategies for sustainable change.",tm:"Self-paced"}],                          note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Module-2"}] },
+  { date:"May 9",                  type:"bonus",     color:"#ffd166", icon:"⭐", title:"Bonus-2",             sub:"Exclusive Content",  act:[{icon:"🎁",t:"Bonus-2: Productivity Hacks",d:"Framework to accomplish more with less effort.",tm:"Self-paced"}],               note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Bonus-2"}] },
+  { date:"May 13",                 type:"reflection",color:"#a78bfa", icon:"🪞", title:"Weekly Reflection-2", sub:"Weekly Check-in",    act:[{icon:"✍️",t:"Weekly Reflection-2",d:"Mid-month — assess momentum and recalibrate.",tm:"Wednesday"}],                         note:[] },
+  { date:"May 15",                 type:"module",    color:"#ff6b9d", icon:"📚", title:"Module-3",            sub:"Mastery",            act:[{icon:"📖",t:"Module-3: Mastery",d:"Consolidate learnings and build your personal action plan.",tm:"Self-paced"}],             note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Module-3"}] },
+  { date:"May 16",                 type:"bonus",     color:"#ffd166", icon:"⭐", title:"Bonus-3",             sub:"Exclusive Content",  act:[{icon:"🎁",t:"Bonus-3: Relationship Mastery",d:"Frameworks for building high-quality relationships.",tm:"Self-paced"}],        note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Bonus-3"}] },
+  { date:"May 17",                 type:"coaching",  color:"#06d6a0", icon:"🎙️",title:"Coaching Call (Eve)", sub:"Group Coaching",     act:[{icon:"🎙️",t:"Coaching Call – Evening",d:"Week 3 review and deep-dive.",tm:"7:00 – 9:00 PM"}],                               note:[{icon:"📞",t:"Coaching Calls",d:"All 6 coaching calls on Sunday 9AM–11AM or 7PM–9PM."}] },
+  { date:"May 20",                 type:"reflection",color:"#a78bfa", icon:"🪞", title:"Weekly Reflection-3", sub:"Weekly Check-in",    act:[{icon:"✍️",t:"Weekly Reflection-3",d:"Three weeks in — celebrate progress and identify gaps.",tm:"Wednesday"}],               note:[] },
+  { date:"May 22",                 type:"module",    color:"#ff6b9d", icon:"📚", title:"Module-4",            sub:"Integration",        act:[{icon:"📖",t:"Module-4: Integration",d:"Weave all learnings into a cohesive personal system.",tm:"Self-paced"}],              note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Module-4"}] },
+  { date:"May 23",                 type:"bonus",     color:"#ffd166", icon:"⭐", title:"Bonus-4",             sub:"Exclusive Content",  act:[{icon:"🎁",t:"Bonus-4",d:"Exclusive bonus content — check Tagmango Portal.",tm:"Self-paced"}],                                note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Bonus-4"}] },
+  { date:"May 27",                 type:"reflection",color:"#a78bfa", icon:"🪞", title:"Weekly Reflection-4", sub:"Weekly Check-in",    act:[{icon:"✍️",t:"Weekly Reflection-4",d:"Month 1 complete — what did you master?",tm:"Wednesday"}],                               note:[] },
+  { date:"May 29",                 type:"qa",        color:"#74b9ff", icon:"❓", title:"Q&A -2",              sub:"Live Q&A",           act:[{icon:"❓",t:"Q&A Session-2",d:"Open Q&A with the coaching team.",tm:"Weekday – scheduled"}],                                   note:[{icon:"📞",t:"Q&A Sessions",d:"6 Q&A sessions total — 2 per month on weekdays."}] },
+  { date:"May 29",                 type:"module",    color:"#ff6b9d", icon:"📚", title:"Module-5",            sub:"Advanced Practice",  act:[{icon:"📖",t:"Module-5: Advanced Practice",d:"Level-up exercises and advanced strategies.",tm:"Self-paced"}],                  note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Module-5"}] },
+  { date:"May 30",                 type:"bonus",     color:"#ffd166", icon:"⭐", title:"Bonus-5",             sub:"Exclusive Content",  act:[{icon:"🎁",t:"Bonus-5",d:"Month 1 final bonus on Tagmango Portal.",tm:"Self-paced"}],                                          note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Bonus-5"}] },
+  { date:"May 31",                 type:"coaching",  color:"#06d6a0", icon:"🎙️",title:"Coaching Call (Mor)", sub:"Morning Coaching",   act:[{icon:"🎙️",t:"Coaching Call – Morning",d:"Month 1 wrap-up. Set Month 2 intentions.",tm:"9:00 – 11:00 AM"}],                  note:[{icon:"📞",t:"Coaching Calls",d:"All 6 coaching calls on Sunday 9AM–11AM or 7PM–9PM."}] },
+  // ── JUNE ──
+  { date:"Jun 3",  mL:"June 2026", type:"reflection",color:"#a78bfa", icon:"🪞", title:"Weekly Reflection-5", sub:"Weekly Check-in",    act:[{icon:"✍️",t:"Weekly Reflection-5",d:"Starting Month 2 — set clear intentions for June.",tm:"Wednesday"}],                    note:[] },
+  { date:"Jun 5",                  type:"module",    color:"#ff6b9d", icon:"📚", title:"Module-6",            sub:"Momentum",           act:[{icon:"📖",t:"Module-6: Momentum",d:"Building unstoppable forward motion.",tm:"Self-paced"}],                                  note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Module-6"}] },
+  { date:"Jun 6",                  type:"bonus",     color:"#ffd166", icon:"⭐", title:"Bonus-6",             sub:"Exclusive Content",  act:[{icon:"🎁",t:"Bonus-6",d:"Exclusive bonus content on Tagmango Portal.",tm:"Self-paced"}],                                      note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Bonus-6"}] },
+  { date:"Jun 10",                 type:"qa",        color:"#74b9ff", icon:"❓", title:"Q&A -3",              sub:"Live Q&A",           act:[{icon:"❓",t:"Q&A Session-3",d:"Open Q&A with the coaching team.",tm:"Weekday – scheduled"}],                                   note:[{icon:"📞",t:"Q&A Sessions",d:"6 Q&A sessions total — 2 per month on weekdays."}] },
+  { date:"Jun 10",                 type:"reflection",color:"#a78bfa", icon:"🪞", title:"Weekly Reflection-6", sub:"Weekly Check-in",    act:[{icon:"✍️",t:"Weekly Reflection-6",d:"Week 2 of June — assess and accelerate.",tm:"Wednesday"}],                               note:[] },
+  { date:"Jun 12",                 type:"module",    color:"#ff6b9d", icon:"📚", title:"Module-7",            sub:"Elevation",          act:[{icon:"📖",t:"Module-7: Elevation",d:"Elevating standards and environment for lasting change.",tm:"Self-paced"}],               note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Module-7"}] },
+  { date:"Jun 13",                 type:"bonus",     color:"#ffd166", icon:"⭐", title:"Bonus-Special-1",     sub:"Special Bonus",      act:[{icon:"🌟",t:"Bonus-Special-1",d:"Deeper dive exclusive to committed participants.",tm:"Self-paced"}],                          note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Bonus-Special-1"}] },
+  { date:"Jun 17",                 type:"reflection",color:"#a78bfa", icon:"🪞", title:"Weekly Reflection-7", sub:"Weekly Check-in",    act:[{icon:"✍️",t:"Weekly Reflection-7",d:"Mid-June — measure growth and double down.",tm:"Wednesday"}],                            note:[] },
+  { date:"Jun 19",                 type:"module",    color:"#ff6b9d", icon:"📚", title:"Module-8",            sub:"Mastery Deepened",   act:[{icon:"📖",t:"Module-8: Mastery Deepened",d:"Advanced application across all life areas.",tm:"Self-paced"}],                   note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Module-8"}] },
+  { date:"Jun 20",                 type:"bonus",     color:"#ffd166", icon:"⭐", title:"Bonus-Special-2",     sub:"Special Bonus",      act:[{icon:"🌟",t:"Bonus-Special-2",d:"Exclusive strategies for peak performers.",tm:"Self-paced"}],                                 note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Bonus-Special-2"}] },
+  { date:"Jun 21",                 type:"coaching",  color:"#06d6a0", icon:"🎙️",title:"Coaching Call (Eve)", sub:"Group Coaching",     act:[{icon:"🎙️",t:"Coaching Call – Evening",d:"June mid-point — share breakthroughs.",tm:"7:00 – 9:00 PM"}],                       note:[{icon:"📞",t:"Coaching Calls",d:"All 6 coaching calls on Sunday 9AM–11AM or 7PM–9PM."}] },
+  { date:"Jun 24",                 type:"reflection",color:"#a78bfa", icon:"🪞", title:"Weekly Reflection-8", sub:"Weekly Check-in",    act:[{icon:"✍️",t:"Weekly Reflection-8",d:"Final June reflection — prepare for the final stretch.",tm:"Wednesday"}],                 note:[] },
+  { date:"Jun 26",                 type:"module",    color:"#ff6b9d", icon:"📚", title:"Module-9",            sub:"Transformation",     act:[{icon:"📖",t:"Module-9: Transformation",d:"Document and anchor the new you.",tm:"Self-paced"}],                                note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Module-9"}] },
+  { date:"Jun 27",                 type:"bonus",     color:"#ffd166", icon:"⭐", title:"Bonus-Special-3",     sub:"Special Bonus",      act:[{icon:"🌟",t:"Bonus-Special-3",d:"The final piece of the puzzle.",tm:"Self-paced"}],                                            note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Bonus-Special-3"}] },
+  { date:"Jun 30",                 type:"qa",        color:"#74b9ff", icon:"❓", title:"Q&A -4",              sub:"Live Q&A",           act:[{icon:"❓",t:"Q&A Session-4",d:"Open Q&A — Month 2 wrap-up.",tm:"Tuesday – scheduled"}],                                        note:[{icon:"📞",t:"Q&A Sessions",d:"6 Q&A sessions total — 2 per month on weekdays."}] },
+  // ── JULY ──
+  { date:"Jul 1",  mL:"July 2026", type:"reflection",color:"#a78bfa", icon:"🪞", title:"Weekly Reflection-9", sub:"Weekly Check-in",    act:[{icon:"✍️",t:"Weekly Reflection-9",d:"Welcome to Month 3 — the final chapter begins.",tm:"Wednesday"}],                       note:[] },
+  { date:"Jul 3",                  type:"module",    color:"#ff6b9d", icon:"📚", title:"Module-10",           sub:"Integration & Flow", act:[{icon:"📖",t:"Module-10: Integration & Flow",d:"Bringing everything into effortless daily flow.",tm:"Self-paced"}],            note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Module-10"}] },
+  { date:"Jul 5",                  type:"coaching",  color:"#06d6a0", icon:"🎙️",title:"Coaching Call (Mor)", sub:"Morning Coaching",   act:[{icon:"🎙️",t:"Coaching Call – Morning",d:"Final month kick-off — set bold targets for July.",tm:"9:00 – 11:00 AM"}],         note:[{icon:"📞",t:"Coaching Calls",d:"All 6 coaching calls on Sunday 9AM–11AM or 7PM–9PM."}] },
+  { date:"Jul 8",                  type:"qa",        color:"#74b9ff", icon:"❓", title:"Q&A -5",              sub:"Live Q&A",           act:[{icon:"❓",t:"Q&A Session-5",d:"Open Q&A with the coaching team.",tm:"Wednesday – scheduled"}],                                 note:[{icon:"📞",t:"Q&A Sessions",d:"6 Q&A sessions total — 2 per month on weekdays."}] },
+  { date:"Jul 8",                  type:"reflection",color:"#a78bfa", icon:"🪞", title:"Weekly Reflection-8b",sub:"Weekly Check-in",    act:[{icon:"✍️",t:"Weekly Reflection (Jul wk2)",d:"Week 2 momentum check — staying powerful.",tm:"Wednesday"}],                      note:[] },
+  { date:"Jul 10",                 type:"module",    color:"#ff6b9d", icon:"📚", title:"Module-11",           sub:"Legacy",             act:[{icon:"📖",t:"Module-11: Legacy",d:"What mark will you leave? Building for the long term.",tm:"Self-paced"}],                   note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Module-11"}] },
+  { date:"Jul 15",                 type:"reflection",color:"#a78bfa", icon:"🪞", title:"Weekly Reflection-9b",sub:"Weekly Check-in",    act:[{icon:"✍️",t:"Weekly Reflection (Jul wk3)",d:"Past the halfway mark — how far have you come?",tm:"Wednesday"}],                 note:[] },
+  { date:"Jul 17",                 type:"module",    color:"#ff6b9d", icon:"📚", title:"Module-12",           sub:"Completion",         act:[{icon:"📖",t:"Module-12: Completion",d:"Honour your journey and commit to the next level.",tm:"Self-paced"}],                   note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Module-12"}] },
+  { date:"Jul 22",                 type:"reflection",color:"#a78bfa", icon:"🪞", title:"Weekly Reflection-10",sub:"Weekly Check-in",    act:[{icon:"✍️",t:"Weekly Reflection-10",d:"Penultimate reflection — prepare for the grand finale.",tm:"Wednesday"}],               note:[] },
+  { date:"Jul 26",                 type:"coaching",  color:"#06d6a0", icon:"🎙️",title:"Coaching Call (Eve)", sub:"Final Group Coaching",act:[{icon:"🎙️",t:"Coaching Call – Evening (Final)",d:"Last live group call — celebrate, share, inspire.",tm:"7:00 – 9:00 PM"}],  note:[{icon:"📞",t:"Coaching Calls",d:"All 6 coaching calls on Sunday 9AM–11AM or 7PM–9PM."}] },
+  { date:"Jul 29",                 type:"reflection",color:"#a78bfa", icon:"🪞", title:"Weekly Reflection-11",sub:"Final Reflection",   act:[{icon:"✍️",t:"Weekly Reflection-11",d:"Final reflection — capture your complete transformation.",tm:"Wednesday"}],               note:[] },
+  { date:"Jul 30",                 type:"qa",        color:"#74b9ff", icon:"❓", title:"Q&A -6",              sub:"Final Q&A",          act:[{icon:"❓",t:"Q&A Session-6 (Final)",d:"Closing Q&A — ask anything before the program ends.",tm:"Thursday – scheduled"}],       note:[{icon:"📞",t:"Q&A Sessions",d:"6 Q&A sessions total — 2 per month on weekdays."}] },
+];
+
+/* ─────────────────────────────────────────────
+   LAYOUT — responsive, computed once on render
+───────────────────────────────────────────── */
+function getLayout() {
+  const vw      = window.innerWidth;
+  const mobile  = vw < 600;
+  const CW      = Math.min(vw, 520);          // canvas logical width
+  const SWING   = mobile ? CW * 0.28 : CW * 0.32; // how far nodes swing left/right
+  const SPACING = mobile ? 90 : 110;          // vertical gap between milestones
+  const TOP_PAD = mobile ? 110 : 130;         // space above first node (flag lives here)
+  const BOT_PAD = mobile ? 110 : 130;         // space below last node (trophy)
+  const CX      = CW / 2;                     // horizontal centre
+  return { CW, SWING, SPACING, TOP_PAD, BOT_PAD, CX, mobile };
+}
+
+function getX(i, layout) {
+  return (i % 2 === 0)
+    ? layout.CX - layout.SWING
+    : layout.CX + layout.SWING;
+}
+
+function buildPath(layout) {
+  const { SPACING, TOP_PAD, BOT_PAD, CW } = layout;
+  const N   = MILESTONES.length;
+  const CH  = TOP_PAD + (N - 1) * SPACING + BOT_PAD;
+  const pts = MILESTONES.map((_, i) => ({
+    x: getX(i, layout),
+    y: TOP_PAD + i * SPACING
+  }));
+
+  // Start point: straight up from first milestone
+  let d = `M ${pts[0].x} ${TOP_PAD - 55}`;
+
+  pts.forEach((p, i) => {
+    if (i === 0) {
+      d += ` L ${p.x} ${p.y}`;
+    } else {
+      const prev = pts[i - 1];
+      const c1x = prev.x, c1y = prev.y + SPACING * 0.55;
+      const c2x = p.x,    c2y = p.y   - SPACING * 0.55;
+      d += ` C ${c1x} ${c1y}, ${c2x} ${c2y}, ${p.x} ${p.y}`;
+    }
+  });
+
+  // Extend road below last milestone into trophy area
+  const last = pts[N - 1];
+  d += ` L ${last.x} ${CH - BOT_PAD + 55}`;
+
+  return { d, pts, CH };
+}
+
+/* ─────────────────────────────────────────────
+   RENDER
+───────────────────────────────────────────── */
+function renderRoadmap() {
+  const layout = getLayout();
+  const { CW, TOP_PAD, BOT_PAD, mobile } = layout;
+  const { d, pts, CH } = buildPath(layout);
+
+  // Circle size responsive
+  const circleSize = mobile ? 52 : 62;
+  const armW       = mobile ? 28 : 40;
+  const labelMax   = mobile ? 110 : 150;
+  const flagSize   = mobile ? 48 : 64;
+  const trophySize = mobile ? '2.6rem' : '3.6rem';
+
+  /* SVG */
+  const svg = document.getElementById('rmSvg');
+  svg.setAttribute('viewBox', `0 0 ${CW} ${CH}`);
+
+  /* Canvas */
+  const canvas = document.getElementById('rmCanvas');
+  canvas.style.width  = CW + 'px';
+  canvas.style.height = CH + 'px';
+
+  document.getElementById('roadPath').setAttribute('d', d);
+  document.getElementById('dashPath').setAttribute('d', d);
+
+  const wrap = document.getElementById('milestones');
+  wrap.innerHTML = '';
+
+  /* ── CHEQUERED FLAG ──────────────────────────────────────
+     Placed ABOVE the first milestone, centred on its x,
+     so it never overlaps the legend or milestone labels.   */
+  const flagX = pts[0].x;
+  const flagY = TOP_PAD - 55;   // same y as road start
+  const flagEl = document.createElement('div');
+  flagEl.className = 'road-flag';
+  // position: centre-x on the road start, bottom of pole touches flagY
+  flagEl.style.left = (flagX / CW * 100) + '%';
+  flagEl.style.top  = (flagY / CH * 100) + '%';
+  flagEl.innerHTML = `
+    <svg class="flag-svg" style="width:${flagSize}px;height:${Math.round(flagSize*0.67)}px" viewBox="0 0 56 38" xmlns="http://www.w3.org/2000/svg">
+      <rect width="56" height="38" fill="#fff"/>
+      <rect x="0"  y="0"  width="14" height="12" fill="#111"/>
+      <rect x="28" y="0"  width="14" height="12" fill="#111"/>
+      <rect x="14" y="12" width="14" height="13" fill="#111"/>
+      <rect x="42" y="12" width="14" height="13" fill="#111"/>
+      <rect x="0"  y="25" width="14" height="13" fill="#111"/>
+      <rect x="28" y="25" width="14" height="13" fill="#111"/>
+    </svg>
+    <div class="flag-pole"></div>
+    <div class="flag-label">START</div>
+  `;
+  wrap.appendChild(flagEl);
+
+  /* ── MILESTONES ─────────────────────────────────────── */
+  let lastMonth = '';
+  MILESTONES.forEach((m, i) => {
+    const p    = pts[i];
+    const side = (i % 2 === 0) ? 'left' : 'right';
+
+    /* Month banner — placed 48px above each section's first node */
+    if (m.mL && m.mL !== lastMonth) {
+      lastMonth = m.mL;
+      const mdiv = document.createElement('div');
+      mdiv.className = 'month-divider';
+      // horizontally centred, vertically 48px above the first node of that month
+      mdiv.style.top  = ((p.y - 48) / CH * 100) + '%';
+      mdiv.style.left = '50%';
+      mdiv.textContent = m.mL;
+      wrap.appendChild(mdiv);
+    }
+
+    const [mon, day] = m.date.split(' ');
+    const el = document.createElement('div');
+    el.className = `ms ${side}`;
+    el.style.cssText = `
+      left:${(p.x / CW * 100)}%;
+      top:${(p.y / CH * 100)}%;
+      --circle:${circleSize}px;
+      --arm:${armW}px;
+      --lmax:${labelMax}px;
+    `;
+    el.innerHTML = `
+      <div class="ms-circle" style="background:linear-gradient(135deg,${m.color}ee,${m.color}99);border-color:${m.color}88;">
+        <span class="ms-day">${day}</span>
+        <span class="ms-mon">${mon}</span>
+      </div>
+      <div class="ms-arm"></div>
+      <div class="ms-label" style="border-color:${m.color}55;">${m.title}</div>
+    `;
+    el.onclick = () => { playClick(); showDetail(m); };
+    wrap.appendChild(el);
+  });
+
+  /* ── TROPHY ──────────────────────────────────────────── */
+  const lp = pts[pts.length - 1];
+  const tEl = document.createElement('div');
+  tEl.className = 'road-trophy';
+  tEl.style.left = (lp.x / CW * 100) + '%';
+  tEl.style.top  = ((lp.y + 60) / CH * 100) + '%';
+  tEl.innerHTML = `
+    <div class="trophy-glow"></div>
+    <div class="trophy-icon" style="font-size:${trophySize}">🏆</div>
+    <div class="trophy-label">YOU DID IT!</div>
+  `;
+  wrap.appendChild(tEl);
+}
+
+/* ─────────────────────────────────────────────
+   AUDIO
+───────────────────────────────────────────── */
+function playClick() {
+  try {
+    const a = document.getElementById('clickSound');
+    a.currentTime = 0;
+    a.play().catch(() => {});
+  } catch(e) {}
+}
+
+/* ─────────────────────────────────────────────
+   DETAIL VIEW
+───────────────────────────────────────────── */
+function showDetail(m) {
+  document.getElementById('rm-view').classList.add('hidden');
+  const dv = document.getElementById('dt-view');
+  dv.classList.remove('hidden');
+  dv.scrollTop = 0;
+
+  document.getElementById('dtTopTitle').textContent = m.title;
+  document.getElementById('dtHero').innerHTML = `
+    <span class="dt-icon">${m.icon}</span>
+    <div class="dt-badge">
+      <div class="dt-badge-dot" style="background:${m.color}"></div>
+      ${m.type.charAt(0).toUpperCase() + m.type.slice(1)}
+    </div>
+    <div class="dt-h2" style="color:${m.color}">${m.title}</div>
+    <div class="dt-date">📅 ${m.date}, 2026 &nbsp;·&nbsp; ${m.sub}</div>
+  `;
+
+  let html = '';
+  if (m.act.length) {
+    html += `<div class="dt-section"><div class="dt-section-label">Today's Activities</div><div class="act-list">`;
+    m.act.forEach(a => {
+      html += `
+        <div class="act-card" style="border-color:${m.color}33;--accent:${m.color};">
+          <span class="act-icon">${a.icon}</span>
+          <div class="act-title">${a.t}</div>
+          <div class="act-desc">${a.d}</div>
+          ${a.tm ? `<div class="act-time" style="color:${m.color}">⏰ ${a.tm}</div>` : ''}
+        </div>`;
+    });
+    html += `</div></div>`;
+  }
+  if (m.note.length) {
+    html += `<div class="dt-section"><div class="dt-section-label">Notes</div>`;
+    m.note.forEach(n => {
+      html += `
+        <div class="info-card" style="border-color:${m.color}33;">
+          <div class="info-card-icon">${n.icon}</div>
+          <div><h4>${n.t}</h4><p>${n.d}</p></div>
+        </div>`;
+    });
+    html += `</div>`;
+  }
+  document.getElementById('dtBody').innerHTML = html;
+}
+
+function goBack() {
+  document.getElementById('dt-view').classList.add('hidden');
+  document.getElementById('rm-view').classList.remove('hidden');
+}
+
+/* ─────────────────────────────────────────────
+   INIT + RESIZE
+───────────────────────────────────────────── */
+renderRoadmap();
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(renderRoadmap, 150);
+});
+</script>
+</body>
+</html>
