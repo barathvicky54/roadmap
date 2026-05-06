@@ -114,17 +114,59 @@ const MILESTONES = [
 ];
 
 /* ─────────────────────────────────────────────
+   CURRENT DAY DETECTION
+   Parses each milestone's date string and
+   compares to today. Works automatically every
+   day — zero manual editing needed.
+───────────────────────────────────────────── */
+const MONTH_MAP = {
+  'Jan':0,'Feb':1,'Mar':2,'Apr':3,'May':4,'Jun':5,
+  'Jul':6,'Aug':7,'Sep':8,'Oct':9,'Nov':10,'Dec':11
+};
+
+function parseMilestoneDate(dateStr) {
+  // e.g. "May 6" → Date(2026, 4, 6)
+  const [mon, day] = dateStr.split(' ');
+  return new Date(2026, MONTH_MAP[mon], parseInt(day, 10));
+}
+
+function getMilestoneStatus(dateStr) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const mDate = parseMilestoneDate(dateStr);
+  if (mDate.getTime() === today.getTime()) return 'today';
+  if (mDate < today) return 'past';
+  return 'future';
+}
+
+/* Find the first "today" milestone index, or the nearest future one */
+function getTodayIndex() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  // Check for exact today match first
+  for (let i = 0; i < MILESTONES.length; i++) {
+    if (getMilestoneStatus(MILESTONES[i].date) === 'today') return i;
+  }
+  // Otherwise find first future milestone
+  for (let i = 0; i < MILESTONES.length; i++) {
+    if (getMilestoneStatus(MILESTONES[i].date) === 'future') return i;
+  }
+  return -1; // all past
+}
+
+/* ─────────────────────────────────────────────
    LAYOUT — responsive, computed once on render
 ───────────────────────────────────────────── */
 function getLayout() {
   const vw      = window.innerWidth;
   const mobile  = vw < 600;
-  const CW      = Math.min(vw, 520);          // canvas logical width
-  const SWING   = mobile ? CW * 0.28 : CW * 0.32; // how far nodes swing left/right
-  const SPACING = mobile ? 90 : 110;          // vertical gap between milestones
-  const TOP_PAD = mobile ? 110 : 130;         // space above first node (flag lives here)
-  const BOT_PAD = mobile ? 110 : 130;         // space below last node (trophy)
-  const CX      = CW / 2;                     // horizontal centre
+  const CW      = Math.min(vw, 520);
+  const SWING   = mobile ? CW * 0.28 : CW * 0.32;
+  const SPACING = mobile ? 90 : 110;
+  /* ↑↑ TOP_PAD increased by 60px to create breathing room for the flag */
+  const TOP_PAD = mobile ? 170 : 190;
+  const BOT_PAD = mobile ? 110 : 130;
+  const CX      = CW / 2;
   return { CW, SWING, SPACING, TOP_PAD, BOT_PAD, CX, mobile };
 }
 
@@ -143,7 +185,6 @@ function buildPath(layout) {
     y: TOP_PAD + i * SPACING
   }));
 
-  // Start point: straight up from first milestone
   let d = `M ${pts[0].x} ${TOP_PAD - 55}`;
 
   pts.forEach((p, i) => {
@@ -157,7 +198,6 @@ function buildPath(layout) {
     }
   });
 
-  // Extend road below last milestone into trophy area
   const last = pts[N - 1];
   d += ` L ${last.x} ${CH - BOT_PAD + 55}`;
 
@@ -167,23 +207,23 @@ function buildPath(layout) {
 /* ─────────────────────────────────────────────
    RENDER
 ───────────────────────────────────────────── */
+let todayMilestoneEl = null; // reference for auto-scroll
+
 function renderRoadmap() {
+  todayMilestoneEl = null;
   const layout = getLayout();
   const { CW, TOP_PAD, BOT_PAD, mobile } = layout;
   const { d, pts, CH } = buildPath(layout);
 
-  // Circle size responsive
   const circleSize = mobile ? 52 : 62;
   const armW       = mobile ? 28 : 40;
   const labelMax   = mobile ? 110 : 150;
   const flagSize   = mobile ? 48 : 64;
   const trophySize = mobile ? '2.6rem' : '3.6rem';
 
-  /* SVG */
   const svg = document.getElementById('rmSvg');
   svg.setAttribute('viewBox', `0 0 ${CW} ${CH}`);
 
-  /* Canvas */
   const canvas = document.getElementById('rmCanvas');
   canvas.style.width  = CW + 'px';
   canvas.style.height = CH + 'px';
@@ -194,14 +234,11 @@ function renderRoadmap() {
   const wrap = document.getElementById('milestones');
   wrap.innerHTML = '';
 
-  /* ── CHEQUERED FLAG ──────────────────────────────────────
-     Placed ABOVE the first milestone, centred on its x,
-     so it never overlaps the legend or milestone labels.   */
+  /* ── CHEQUERED FLAG ────────────────────────────────────── */
   const flagX = pts[0].x;
-  const flagY = TOP_PAD - 55;   // same y as road start
+  const flagY = TOP_PAD - 55;
   const flagEl = document.createElement('div');
   flagEl.className = 'road-flag';
-  // position: centre-x on the road start, bottom of pole touches flagY
   flagEl.style.left = (flagX / CW * 100) + '%';
   flagEl.style.top  = (flagY / CH * 100) + '%';
   flagEl.innerHTML = `
@@ -221,42 +258,70 @@ function renderRoadmap() {
 
   /* ── MILESTONES ─────────────────────────────────────── */
   let lastMonth = '';
-  MILESTONES.forEach((m, i) => {
-    const p    = pts[i];
-    const side = (i % 2 === 0) ? 'left' : 'right';
+  const todayIdx = getTodayIndex();
 
-    /* Month banner — placed 48px above each section's first node */
+  MILESTONES.forEach((m, i) => {
+    const p      = pts[i];
+    const side   = (i % 2 === 0) ? 'left' : 'right';
+    const status = getMilestoneStatus(m.date);
+    const isToday = (status === 'today');
+    // If no exact today match, highlight the nearest upcoming milestone
+    const isHighlighted = isToday || (!MILESTONES.some(x => getMilestoneStatus(x.date)==='today') && i === todayIdx);
+
+    /* Month banner */
     if (m.mL && m.mL !== lastMonth) {
       lastMonth = m.mL;
       const mdiv = document.createElement('div');
       mdiv.className = 'month-divider';
-      // horizontally centred, vertically 48px above the first node of that month
       mdiv.style.top  = ((p.y - 48) / CH * 100) + '%';
       mdiv.style.left = '50%';
       mdiv.textContent = m.mL;
       wrap.appendChild(mdiv);
     }
 
+    /* TODAY badge (only for exact today or nearest) */
+    let todayBadgeHtml = '';
+    if (isHighlighted) {
+      todayBadgeHtml = `<div class="today-badge">TODAY</div>`;
+    }
+
+    const todayCircleSize = isHighlighted ? Math.round(circleSize * 1.22) : circleSize;
+
     const [mon, day] = m.date.split(' ');
     const el = document.createElement('div');
-    el.className = `ms ${side}`;
+
+    // Build class list
+    let classStr = `ms ${side}`;
+    if (status === 'past') classStr += ' ms-past';
+    if (isHighlighted)     classStr += ' ms-today';
+
+    el.className = classStr;
     el.style.cssText = `
       left:${(p.x / CW * 100)}%;
       top:${(p.y / CH * 100)}%;
-      --circle:${circleSize}px;
+      --circle:${todayCircleSize}px;
       --arm:${armW}px;
       --lmax:${labelMax}px;
     `;
+
     el.innerHTML = `
-      <div class="ms-circle" style="background:linear-gradient(135deg,${m.color}ee,${m.color}99);border-color:${m.color}88;">
+      ${isHighlighted ? '<div class="today-pulse-ring" style="--tcolor:' + m.color + '"></div>' : ''}
+      ${isHighlighted ? '<div class="today-glow-ring" style="--tcolor:' + m.color + '"></div>' : ''}
+      <div class="ms-circle" style="background:linear-gradient(135deg,${m.color}ee,${m.color}99);border-color:${isHighlighted ? m.color : m.color+'88'};${isHighlighted ? 'box-shadow:0 0 0 4px '+m.color+'44,0 0 28px '+m.color+'88,0 0 56px '+m.color+'44;' : ''}">
         <span class="ms-day">${day}</span>
         <span class="ms-mon">${mon}</span>
       </div>
       <div class="ms-arm"></div>
-      <div class="ms-label" style="border-color:${m.color}55;">${m.title}</div>
+      <div class="ms-label" style="border-color:${m.color}55;${isHighlighted ? 'border-color:'+m.color+';box-shadow:0 0 12px '+m.color+'55;' : ''}">
+        ${todayBadgeHtml}
+        ${m.title}
+      </div>
     `;
+
     el.onclick = () => { playClick(); showDetail(m); };
     wrap.appendChild(el);
+
+    if (isHighlighted) todayMilestoneEl = el;
   });
 
   /* ── TROPHY ──────────────────────────────────────────── */
@@ -271,6 +336,25 @@ function renderRoadmap() {
     <div class="trophy-label">YOU DID IT!</div>
   `;
   wrap.appendChild(tEl);
+
+  /* Auto-scroll to today's milestone after render */
+  if (todayMilestoneEl) {
+    requestAnimationFrame(() => {
+      setTimeout(() => scrollToToday(), 400);
+    });
+  }
+}
+
+/* ─────────────────────────────────────────────
+   AUTO-SCROLL TO TODAY
+───────────────────────────────────────────── */
+function scrollToToday() {
+  if (!todayMilestoneEl) return;
+  const view = document.getElementById('rm-view');
+  const elRect   = todayMilestoneEl.getBoundingClientRect();
+  const viewRect  = view.getBoundingClientRect();
+  const target    = view.scrollTop + (elRect.top - viewRect.top) - (viewRect.height / 2) + (elRect.height / 2);
+  view.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
 }
 
 /* ─────────────────────────────────────────────
@@ -293,6 +377,13 @@ function showDetail(m) {
   dv.classList.remove('hidden');
   dv.scrollTop = 0;
 
+  const status = getMilestoneStatus(m.date);
+  const statusBadge = status === 'today'
+    ? `<div class="dt-today-badge">🎯 TODAY</div>`
+    : status === 'past'
+    ? `<div class="dt-past-badge">✅ Completed</div>`
+    : '';
+
   document.getElementById('dtTopTitle').textContent = m.title;
   document.getElementById('dtHero').innerHTML = `
     <span class="dt-icon">${m.icon}</span>
@@ -300,6 +391,7 @@ function showDetail(m) {
       <div class="dt-badge-dot" style="background:${m.color}"></div>
       ${m.type.charAt(0).toUpperCase() + m.type.slice(1)}
     </div>
+    ${statusBadge}
     <div class="dt-h2" style="color:${m.color}">${m.title}</div>
     <div class="dt-date">📅 ${m.date}, 2026 &nbsp;·&nbsp; ${m.sub}</div>
   `;

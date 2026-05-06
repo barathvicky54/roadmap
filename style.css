@@ -473,6 +473,129 @@ html, body {
 .info-card p    { font-size: clamp(.72rem, 2.3vw, .82rem); color: var(--muted); line-height: 1.6; }
 
 /* ══════════════════════════════════════════
+   CURRENT DAY — TODAY badge on label
+══════════════════════════════════════════ */
+.today-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #fff 0%, #ffffffcc 100%);
+  color: #0b0c1e;
+  font-family: 'Syne', sans-serif;
+  font-size: .52rem;
+  font-weight: 800;
+  letter-spacing: 1.8px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  margin-bottom: 3px;
+  vertical-align: middle;
+  margin-right: 4px;
+  box-shadow: 0 0 8px rgba(255,255,255,.5);
+  animation: todayBadgePulse 2s ease-in-out infinite;
+}
+
+@keyframes todayBadgePulse {
+  0%,100% { box-shadow: 0 0 8px rgba(255,255,255,.5); }
+  50%      { box-shadow: 0 0 18px rgba(255,255,255,.9); }
+}
+
+/* ══════════════════════════════════════════
+   CURRENT DAY — pulsing ring around circle
+══════════════════════════════════════════ */
+.today-pulse-ring {
+  position: absolute;
+  width: calc(var(--circle, 56px) + 20px);
+  height: calc(var(--circle, 56px) + 20px);
+  border-radius: 50%;
+  border: 2.5px solid var(--tcolor, #fff);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 4;
+  animation: todayPulseRing 1.8s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes todayPulseRing {
+  0%   { transform: translate(-50%,-50%) scale(1);   opacity: .9; }
+  70%  { transform: translate(-50%,-50%) scale(1.5); opacity: 0; }
+  100% { transform: translate(-50%,-50%) scale(1.5); opacity: 0; }
+}
+
+/* ══════════════════════════════════════════
+   CURRENT DAY — glow halo
+══════════════════════════════════════════ */
+.today-glow-ring {
+  position: absolute;
+  width: calc(var(--circle, 56px) + 36px);
+  height: calc(var(--circle, 56px) + 36px);
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--tcolor, #fff) 0%, transparent 72%);
+  opacity: .22;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  animation: todayGlowPulse 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes todayGlowPulse {
+  0%,100% { opacity: .22; transform: translate(-50%,-50%) scale(1); }
+  50%      { opacity: .45; transform: translate(-50%,-50%) scale(1.18); }
+}
+
+/* ══════════════════════════════════════════
+   PAST milestones — dimmed appearance
+══════════════════════════════════════════ */
+.ms.ms-past {
+  opacity: 0.48;
+  filter: saturate(0.5);
+}
+/* Keep clickable feel on hover */
+.ms.ms-past:active { opacity: 0.7; }
+
+/* ══════════════════════════════════════════
+   TODAY milestone — larger + label highlight
+══════════════════════════════════════════ */
+.ms.ms-today {
+  z-index: 7;
+}
+.ms.ms-today .ms-label {
+  font-weight: 800;
+}
+.ms.ms-today .ms-circle {
+  animation: todayCircleBreath 2.2s ease-in-out infinite;
+}
+
+@keyframes todayCircleBreath {
+  0%,100% { transform: scale(1); }
+  50%      { transform: scale(1.07); }
+}
+
+/* ══════════════════════════════════════════
+   DETAIL VIEW — today / past status badges
+══════════════════════════════════════════ */
+.dt-today-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #ff6b9d, #a78bfa);
+  color: #fff;
+  font-family: 'Syne', sans-serif;
+  font-size: .72rem; font-weight: 800;
+  letter-spacing: 2px;
+  padding: 5px 18px; border-radius: 20px;
+  margin-bottom: 12px;
+  box-shadow: 0 0 20px rgba(167,139,250,.55);
+  animation: todayBadgePulse 2s ease-in-out infinite;
+}
+
+.dt-past-badge {
+  display: inline-block;
+  background: rgba(255,255,255,.1);
+  color: rgba(255,255,255,.6);
+  font-size: .72rem; font-weight: 700;
+  letter-spacing: 1.5px;
+  padding: 5px 16px; border-radius: 20px;
+  margin-bottom: 12px;
+}
+
+/* ══════════════════════════════════════════
    ANIMATIONS
 ══════════════════════════════════════════ */
 @keyframes fadeUp {
