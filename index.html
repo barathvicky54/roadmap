@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Master Your Destiny</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<audio id="clickSound" src="click.mp3" preload="auto"></audio>
+<div class="stars-bg"></div>
+
+<!-- ═══════════════ ROADMAP VIEW ═══════════════ -->
+<div class="view" id="rm-view">
+
+  <!-- sticky header -->
+  <div class="rm-header fu">
+    <div class="rm-tag">May – September 2026</div>
+    <div class="rm-title">Master Your Destiny</div>
+    <div class="rm-sub">31 May – 6 Sep · Tap a date to explore</div>
+  </div>
+
+  <!-- legend -->
+  <div class="legend fu2">
+    <div class="lpill"><span class="ldot" style="background:#ff6b9d"></span>Module</div>
+    <div class="lpill"><span class="ldot" style="background:#ffd166"></span>Bonus</div>
+    <div class="lpill"><span class="ldot" style="background:#06d6a0"></span>Coaching</div>
+    <div class="lpill"><span class="ldot" style="background:#74b9ff"></span>Q&amp;A</div>
+    <div class="lpill"><span class="ldot" style="background:#a78bfa"></span>Reflect</div>
+  </div>
+
+  <!-- road canvas -->
+  <div class="rm-canvas-wrap fu3">
+    <div class="rm-canvas" id="rmCanvas">
+      <svg class="rm-svg" id="rmSvg" xmlns="http://www.w3.org/2000/svg">
+        <path class="r-road" id="roadPath"/>
+        <path class="r-dash" id="dashPath"/>
+      </svg>
+      <div id="milestones"></div>
+    </div>
+  </div>
+
+</div><!-- /rm-view -->
+
+<!-- ═══════════════ DETAIL VIEW ═══════════════ -->
+<div class="view hidden" id="dt-view">
+  <div class="dt-topbar">
+    <button class="back-btn" onclick="goBack()">←</button>
+    <div class="topbar-title" id="dtTopTitle"></div>
+  </div>
+  <div class="dt-inner">
+    <div class="dt-hero fu" id="dtHero"></div>
+    <div id="dtBody"></div>
+    <div style="height:60px"></div>
+  </div>
+</div>
+
+<script>
+/* ─────────────────────────────────────────────
+   MILESTONE DATA
+───────────────────────────────────────────── */
+const MILESTONES = [
+  // ── MAY ──
+  { date:"May 31", mL:"May 2026",  type:"coaching",  color:"#06d6a0", icon:"🎙️",title:"Coaching Call (Mor)",  sub:"Morning Coaching",                                     act:[{icon:"🎙️",t:"Coaching Call – Morning",d:"Live group coaching.",tm:"9:00 – 11:00 AM"}],                                                                  note:[{icon:"📞",t:"Coaching Calls",d:"All coaching calls on Sunday 9AM–11AM or 7PM–9PM."}] },
+  // ── JUNE ──
+  { date:"Jun 1",  mL:"June 2026", type:"module",    color:"#ff6b9d", icon:"📚", title:"Module-1",             sub:"Creating a Paradigm Shift",                           act:[{icon:"📖",t:"Module-1: Creating a Paradigm Shift",d:"Creating a Paradigm Shift",tm:"Self-paced"}],                                                    note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Module-1"}] },
+  { date:"Jun 2",                  type:"bonus",     color:"#ffd166", icon:"⭐", title:"Bonus-1",              sub:"11 Spiritual Laws of the Universe",                    act:[{icon:"🎁",t:"Bonus-1: 11 Spiritual Laws of the Universe",d:"11 Spiritual Laws of the Universe",tm:"Self-paced"}],                                       note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Bonus-1"}] },
+  { date:"Jun 5",                  type:"reflection",color:"#a78bfa", icon:"🪞", title:"Weekly Reflection-1",  sub:"Weekly Check-in",                                      act:[{icon:"✍️",t:"Weekly Reflection-1",d:"Reflect on your wins, insights, and areas to improve.",tm:"Friday"}],                                               note:[] },
+  { date:"Jun 8",                  type:"module",    color:"#ff6b9d", icon:"📚", title:"Module-2",             sub:"Manifesting from the Quantum Realm",                   act:[{icon:"📖",t:"Module-2: Manifesting from the Quantum Realm & Healing The Inner Child",d:"Manifesting from the Quantum Realm & Healing The Inner Child",tm:"Self-paced"}], note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Module-2"}] },
+  { date:"Jun 9",                  type:"bonus",     color:"#ffd166", icon:"⭐", title:"Bonus-2 & Q&A-1",      sub:"Bonus + Live Q&A",                                     act:[{icon:"🎁",t:"Bonus-2: Opening Your Heart to the Divine Unconditional Love",d:"Opening Your Heart to the Divine Unconditional Love",tm:"Self-paced"},{icon:"❓",t:"Q&A Session-1",d:"Live Q&A session.",tm:"7:00 – 8:00 PM"}], note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Bonus-2"},{icon:"📞",t:"Q&A Sessions",d:"2 per month on weekdays, 7PM–8PM."}] },
+  { date:"Jun 12",                 type:"reflection",color:"#a78bfa", icon:"🪞", title:"Weekly Reflection-2",  sub:"Weekly Check-in",                                      act:[{icon:"✍️",t:"Weekly Reflection-2",d:"Reflect on your wins, insights, and areas to improve.",tm:"Friday"}],                                               note:[] },
+  { date:"Jun 15",                 type:"module",    color:"#ff6b9d", icon:"📚", title:"Module-3",             sub:"Identity Shift & Quantum Jumping",                     act:[{icon:"📖",t:"Module-3: Identity Shift & Quantum Jumping",d:"Identity Shift & Quantum Jumping",tm:"Self-paced"}],                                        note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Module-3"}] },
+  { date:"Jun 16",                 type:"bonus",     color:"#ffd166", icon:"⭐", title:"Bonus-3",              sub:"Activating Intuition & Inner Wisdom",                  act:[{icon:"🎁",t:"Bonus-3: Activating Intuition & Inner Wisdom",d:"Activating Intuition & Inner Wisdom",tm:"Self-paced"}],                                   note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Bonus-3"}] },
+  { date:"Jun 19",                 type:"reflection",color:"#a78bfa", icon:"🪞", title:"Weekly Reflection-3",  sub:"Weekly Check-in",                                      act:[{icon:"✍️",t:"Weekly Reflection-3",d:"Reflect on your wins, insights, and areas to improve.",tm:"Friday"}],                                               note:[] },
+  { date:"Jun 21",                 type:"coaching",  color:"#06d6a0", icon:"🎙️",title:"Coaching Call (Eve)",  sub:"Group Coaching",                                       act:[{icon:"🎙️",t:"Coaching Call – Evening",d:"Live group coaching.",tm:"7:00 – 9:00 PM"}],                                                                   note:[{icon:"📞",t:"Coaching Calls",d:"All coaching calls on Sunday 9AM–11AM or 7PM–9PM."}] },
+  { date:"Jun 22",                 type:"module",    color:"#ff6b9d", icon:"📚", title:"Module-4",             sub:"Emotional Mastery & Self-concept Rebuild",             act:[{icon:"📖",t:"Module-4: Emotional Mastery & Self-concept Rebuild",d:"Emotional Mastery & Self-concept Rebuild",tm:"Self-paced"}],                       note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Module-4"}] },
+  { date:"Jun 23",                 type:"bonus",     color:"#ffd166", icon:"⭐", title:"Bonus-4",              sub:"Emotional Freedom Technique (EFT)",                    act:[{icon:"🎁",t:"Bonus-4: Emotional Freedom Technique (EFT)",d:"Emotional Freedom Technique (EFT)",tm:"Self-paced"}],                                       note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Bonus-4"}] },
+  { date:"Jun 26",                 type:"reflection",color:"#a78bfa", icon:"🪞", title:"Weekly Reflection-4",  sub:"Weekly Check-in",                                      act:[{icon:"✍️",t:"Weekly Reflection-4",d:"Reflect on your wins, insights, and areas to improve.",tm:"Friday"}],                                               note:[] },
+  { date:"Jun 29",                 type:"module",    color:"#ff6b9d", icon:"📚", title:"Module-5",             sub:"Releasing Blocks & Building Mental Resilience",        act:[{icon:"📖",t:"Module-5: Releasing Blocks & Building Mental Resilience",d:"Releasing Blocks & Building Mental Resilience",tm:"Self-paced"}],             note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Module-5"}] },
+  { date:"Jun 30",                 type:"bonus",     color:"#ffd166", icon:"⭐", title:"Bonus-5",              sub:"Guided Meditation for Quantum Healing",                act:[{icon:"🎁",t:"Bonus-5: Guided Meditation for Quantum Healing",d:"Guided Meditation for Quantum Healing",tm:"Self-paced"}],                               note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Bonus-5"}] },
+  // ── JULY ──
+  { date:"Jul 2",  mL:"July 2026", type:"qa",        color:"#74b9ff", icon:"❓", title:"Q&A-2",                sub:"Live Q&A",                                             act:[{icon:"❓",t:"Q&A Session-2",d:"Live Q&A session.",tm:"7:00 – 8:00 PM"}],                                                                                  note:[{icon:"📞",t:"Q&A Sessions",d:"2 per month on weekdays, 7PM–8PM."}] },
+  { date:"Jul 3",                  type:"reflection",color:"#a78bfa", icon:"🪞", title:"Weekly Reflection-5",  sub:"Weekly Check-in",                                      act:[{icon:"✍️",t:"Weekly Reflection-5",d:"Reflect on your wins, insights, and areas to improve.",tm:"Friday"}],                                               note:[] },
+  { date:"Jul 5",                  type:"coaching",  color:"#06d6a0", icon:"🎙️",title:"Coaching Call (Mor)",  sub:"Morning Coaching",                                     act:[{icon:"🎙️",t:"Coaching Call – Morning",d:"Live group coaching.",tm:"9:00 – 11:00 AM"}],                                                                  note:[{icon:"📞",t:"Coaching Calls",d:"All coaching calls on Sunday 9AM–11AM or 7PM–9PM."}] },
+  { date:"Jul 6",                  type:"module",    color:"#ff6b9d", icon:"📚", title:"Module-6",             sub:"Belief Rewiring & Living from the End",                act:[{icon:"📖",t:"Module-6: Belief Rewiring & Living from the End",d:"Belief Rewiring & Living from the End",tm:"Self-paced"}],                              note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Module-6"}] },
+  { date:"Jul 7",                  type:"bonus",     color:"#ffd166", icon:"⭐", title:"Bonus-6",              sub:"Guided Meditation for Chakra Balancing & Cleansing",   act:[{icon:"🎁",t:"Bonus-6: Guided Meditation for Chakra Balancing & Chakra Cleansing",d:"Guided Meditation for Chakra Balancing & Chakra Cleansing",tm:"Self-paced"}], note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Bonus-6"}] },
+  { date:"Jul 10",                 type:"reflection",color:"#a78bfa", icon:"🪞", title:"Weekly Reflection-6",  sub:"Weekly Check-in",                                      act:[{icon:"✍️",t:"Weekly Reflection-6",d:"Reflect on your wins, insights, and areas to improve.",tm:"Friday"}],                                               note:[] },
+  { date:"Jul 13",                 type:"module",    color:"#ff6b9d", icon:"📚", title:"Module-7",             sub:"Reclaiming Your Power",                                act:[{icon:"📖",t:"Module-7: Reclaiming Your Power",d:"Reclaiming Your Power",tm:"Self-paced"}],                                                               note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Module-7"}] },
+  { date:"Jul 14",                 type:"bonus",     color:"#ffd166", icon:"🌟", title:"Bonus-Special-1 & Q&A-3", sub:"Special Bonus + Live Q&A",                           act:[{icon:"🌟",t:"Special Bonus: Ancestral & Generational Trauma Healing",d:"Ancestral & Generational Trauma Healing",tm:"Self-paced"},{icon:"❓",t:"Q&A Session-3",d:"Live Q&A session.",tm:"7:00 – 8:00 PM"}], note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Bonus-Special-1"},{icon:"📞",t:"Q&A Sessions",d:"2 per month on weekdays, 7PM–8PM."}] },
+  { date:"Jul 17",                 type:"reflection",color:"#a78bfa", icon:"🪞", title:"Weekly Reflection-7",  sub:"Weekly Check-in",                                      act:[{icon:"✍️",t:"Weekly Reflection-7",d:"Reflect on your wins, insights, and areas to improve.",tm:"Friday"}],                                               note:[] },
+  { date:"Jul 20",                 type:"module",    color:"#ff6b9d", icon:"📚", title:"Module-8",             sub:"Energetic Alignment & Daily Rituals",                  act:[{icon:"📖",t:"Module-8: Energetic Alignment & Daily Rituals",d:"Energetic Alignment & Daily Rituals",tm:"Self-paced"}],                                  note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Module-8"}] },
+  { date:"Jul 21",                 type:"bonus",     color:"#ffd166", icon:"⭐", title:"Bonus-Special-2",      sub:"Guided Meditation on Anxiety & Stress Relief",         act:[{icon:"🌟",t:"Special Bonus-2: Guided Meditation on Anxiety & Stress Relief",d:"Guided Meditation on Anxiety & Stress Relief",tm:"Self-paced"}],           note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Bonus-Special-2"}] },
+  { date:"Jul 24",                 type:"reflection",color:"#a78bfa", icon:"🪞", title:"Weekly Reflection-8",  sub:"Weekly Check-in",                                      act:[{icon:"✍️",t:"Weekly Reflection-8",d:"Reflect on your wins, insights, and areas to improve.",tm:"Friday"}],                                               note:[] },
+  { date:"Jul 26",                 type:"coaching",  color:"#06d6a0", icon:"🎙️",title:"Coaching Call (Eve)",  sub:"Group Coaching",                                       act:[{icon:"🎙️",t:"Coaching Call – Evening",d:"Live group coaching.",tm:"7:00 – 9:00 PM"}],                                                                   note:[{icon:"📞",t:"Coaching Calls",d:"All coaching calls on Sunday 9AM–11AM or 7PM–9PM."}] },
+  { date:"Jul 27",                 type:"module",    color:"#ff6b9d", icon:"📚", title:"Module-9",             sub:"Embodiment of the Future Self",                        act:[{icon:"📖",t:"Module-9: Embodiment of the Future Self",d:"Embodiment of the Future Self",tm:"Self-paced"}],                                            note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Module-9"}] },
+  { date:"Jul 28",                 type:"bonus",     color:"#ffd166", icon:"⭐", title:"Bonus-Special-3",      sub:"Guided Meditation on Letting Go",                      act:[{icon:"🌟",t:"Special Bonus-3: Guided Meditation on Letting Go",d:"Guided Meditation on Letting Go",tm:"Self-paced"}],                                    note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Bonus-Special-3"}] },
+  { date:"Jul 31",                 type:"reflection",color:"#a78bfa", icon:"🪞", title:"Weekly Reflection-9",  sub:"Weekly Check-in",                                      act:[{icon:"✍️",t:"Weekly Reflection-9",d:"Reflect on your wins, insights, and areas to improve.",tm:"Friday"}],                                               note:[] },
+  // ── AUGUST ──
+  { date:"Aug 3",  mL:"Aug 2026",  type:"module",    color:"#ff6b9d", icon:"📚", title:"Module-10",            sub:"Heart Brain Coherence & Intuition Activation",         act:[{icon:"📖",t:"Module-10: Heart Brain Coherence & Intuition Activation",d:"Heart Brain Coherence & Intuition Activation",tm:"Self-paced"}],              note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Module-10"}] },
+  { date:"Aug 5",                  type:"qa",        color:"#74b9ff", icon:"❓", title:"Q&A-4",                sub:"Live Q&A",                                             act:[{icon:"❓",t:"Q&A Session-4",d:"Live Q&A session.",tm:"7:00 – 8:00 PM"}],                                                                                  note:[{icon:"📞",t:"Q&A Sessions",d:"2 per month on weekdays, 7PM–8PM."}] },
+  { date:"Aug 7",                  type:"reflection",color:"#a78bfa", icon:"🪞", title:"Weekly Reflection-10", sub:"Weekly Check-in",                                      act:[{icon:"✍️",t:"Weekly Reflection-10",d:"Reflect on your wins, insights, and areas to improve.",tm:"Friday"}],                                              note:[] },
+  { date:"Aug 10",                 type:"module",    color:"#ff6b9d", icon:"📚", title:"Module-11",            sub:"Manifestation From Wholeness",                         act:[{icon:"📖",t:"Module-11: Manifestation From Wholeness",d:"Manifestation From Wholeness",tm:"Self-paced"}],                                               note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Module-11"}] },
+  { date:"Aug 14",                 type:"reflection",color:"#a78bfa", icon:"🪞", title:"Weekly Reflection-11", sub:"Weekly Check-in",                                      act:[{icon:"✍️",t:"Weekly Reflection-11",d:"Reflect on your wins, insights, and areas to improve.",tm:"Friday"}],                                              note:[] },
+  { date:"Aug 16",                 type:"coaching",  color:"#06d6a0", icon:"🎙️",title:"Coaching Call (Mor)",  sub:"Morning Coaching",                                     act:[{icon:"🎙️",t:"Coaching Call – Morning",d:"Live group coaching.",tm:"9:00 – 11:00 AM"}],                                                                  note:[{icon:"📞",t:"Coaching Calls",d:"All coaching calls on Sunday 9AM–11AM or 7PM–9PM."}] },
+  { date:"Aug 17",                 type:"module",    color:"#ff6b9d", icon:"📚", title:"Module-12",            sub:"Integration, Expansion & Destiny Blueprint",           act:[{icon:"📖",t:"Module-12: Integration, Expansion & Destiny Blueprint",d:"Integration, Expansion & Destiny Blueprint",tm:"Self-paced"}],                  note:[{icon:"💡",t:"Access",d:"Tagmango Portal → Module-12"}] },
+  { date:"Aug 21",                 type:"reflection",color:"#a78bfa", icon:"🪞", title:"Weekly Reflection-12", sub:"Weekly Check-in",                                      act:[{icon:"✍️",t:"Weekly Reflection-12",d:"Reflect on your wins, insights, and areas to improve.",tm:"Friday"}],                                              note:[] },
+  { date:"Aug 25",                 type:"qa",        color:"#74b9ff", icon:"❓", title:"Q&A-5",                sub:"Live Q&A",                                             act:[{icon:"❓",t:"Q&A Session-5",d:"Live Q&A session.",tm:"7:00 – 8:00 PM"}],                                                                                  note:[{icon:"📞",t:"Q&A Sessions",d:"2 per month on weekdays, 7PM–8PM."}] },
+  { date:"Aug 30",                 type:"coaching",  color:"#06d6a0", icon:"🎙️",title:"Coaching Call (Eve)",  sub:"Final Group Coaching",                                 act:[{icon:"🎙️",t:"Coaching Call – Evening (Final)",d:"Live group coaching.",tm:"7:00 – 9:00 PM"}],                                                           note:[{icon:"📞",t:"Coaching Calls",d:"All coaching calls on Sunday 9AM–11AM or 7PM–9PM."}] },
+  // ── SEPTEMBER ──
+  { date:"Sep 9",  mL:"Sep 2026",  type:"qa",        color:"#74b9ff", icon:"❓", title:"Q&A-6",                sub:"Final Q&A",                                            act:[{icon:"❓",t:"Q&A Session-6 (Final)",d:"Live Q&A session.",tm:"7:00 – 8:00 PM"}],                                                                         note:[{icon:"📞",t:"Q&A Sessions",d:"2 per month on weekdays, 7PM–8PM."}] },
+];
+
+/* ─────────────────────────────────────────────
+   CURRENT DAY DETECTION
+   Parses each milestone's date string and
+   compares to today. Works automatically every
+   day — zero manual editing needed.
+───────────────────────────────────────────── */
+const MONTH_MAP = {
+  'Jan':0,'Feb':1,'Mar':2,'Apr':3,'May':4,'Jun':5,
+  'Jul':6,'Aug':7,'Sep':8,'Oct':9,'Nov':10,'Dec':11
+};
+
+function parseMilestoneDate(dateStr) {
+  // e.g. "May 6" → Date(2026, 4, 6)
+  const [mon, day] = dateStr.split(' ');
+  return new Date(2026, MONTH_MAP[mon], parseInt(day, 10));
+}
+
+function getMilestoneStatus(dateStr) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const mDate = parseMilestoneDate(dateStr);
+  if (mDate.getTime() === today.getTime()) return 'today';
+  if (mDate < today) return 'past';
+  return 'future';
+}
+
+/* Find the first "today" milestone index — only exact date match */
+function getTodayIndex() {
+  for (let i = 0; i < MILESTONES.length; i++) {
+    if (getMilestoneStatus(MILESTONES[i].date) === 'today') return i;
+  }
+  return -1; // today is not a milestone date
+}
+
+/* ─────────────────────────────────────────────
+   LAYOUT — responsive, computed once on render
+───────────────────────────────────────────── */
+function getLayout() {
+  const vw      = window.innerWidth;
+  const mobile  = vw < 600;
+  const CW      = Math.min(vw, 520);
+  const SWING   = mobile ? CW * 0.28 : CW * 0.32;
+  const SPACING = mobile ? 90 : 110;
+  /* ↑↑ TOP_PAD increased by 60px to create breathing room for the flag */
+  const TOP_PAD = mobile ? 170 : 190;
+  const BOT_PAD = mobile ? 110 : 130;
+  const CX      = CW / 2;
+  return { CW, SWING, SPACING, TOP_PAD, BOT_PAD, CX, mobile };
+}
+
+function getX(i, layout) {
+  return (i % 2 === 0)
+    ? layout.CX - layout.SWING
+    : layout.CX + layout.SWING;
+}
+
+function buildPath(layout) {
+  const { SPACING, TOP_PAD, BOT_PAD, CW } = layout;
+  const N   = MILESTONES.length;
+  const CH  = TOP_PAD + (N - 1) * SPACING + BOT_PAD;
+  const pts = MILESTONES.map((_, i) => ({
+    x: getX(i, layout),
+    y: TOP_PAD + i * SPACING
+  }));
+
+  let d = `M ${pts[0].x} ${TOP_PAD - 55}`;
+
+  pts.forEach((p, i) => {
+    if (i === 0) {
+      d += ` L ${p.x} ${p.y}`;
+    } else {
+      const prev = pts[i - 1];
+      const c1x = prev.x, c1y = prev.y + SPACING * 0.55;
+      const c2x = p.x,    c2y = p.y   - SPACING * 0.55;
+      d += ` C ${c1x} ${c1y}, ${c2x} ${c2y}, ${p.x} ${p.y}`;
+    }
+  });
+
+  const last = pts[N - 1];
+  d += ` L ${last.x} ${CH - BOT_PAD + 55}`;
+
+  return { d, pts, CH };
+}
+
+/* ─────────────────────────────────────────────
+   RENDER
+───────────────────────────────────────────── */
+let todayMilestoneEl = null; // reference for auto-scroll
+
+function renderRoadmap() {
+  todayMilestoneEl = null;
+  const layout = getLayout();
+  const { CW, TOP_PAD, BOT_PAD, mobile } = layout;
+  const { d, pts, CH } = buildPath(layout);
+
+  const circleSize = mobile ? 52 : 62;
+  const armW       = mobile ? 28 : 40;
+  const labelMax   = mobile ? 110 : 150;
+  const flagSize   = mobile ? 48 : 64;
+  const trophySize = mobile ? '2.6rem' : '3.6rem';
+
+  const svg = document.getElementById('rmSvg');
+  svg.setAttribute('viewBox', `0 0 ${CW} ${CH}`);
+
+  const canvas = document.getElementById('rmCanvas');
+  canvas.style.width  = CW + 'px';
+  canvas.style.height = CH + 'px';
+
+  document.getElementById('roadPath').setAttribute('d', d);
+  document.getElementById('dashPath').setAttribute('d', d);
+
+  const wrap = document.getElementById('milestones');
+  wrap.innerHTML = '';
+
+  /* ── CHEQUERED FLAG ────────────────────────────────────── */
+  const flagX = pts[0].x;
+  const flagY = TOP_PAD - 55;
+  const flagEl = document.createElement('div');
+  flagEl.className = 'road-flag';
+  flagEl.style.left = (flagX / CW * 100) + '%';
+  flagEl.style.top  = (flagY / CH * 100) + '%';
+  flagEl.innerHTML = `
+    <svg class="flag-svg" style="width:${flagSize}px;height:${Math.round(flagSize*0.67)}px" viewBox="0 0 56 38" xmlns="http://www.w3.org/2000/svg">
+      <rect width="56" height="38" fill="#fff"/>
+      <rect x="0"  y="0"  width="14" height="12" fill="#111"/>
+      <rect x="28" y="0"  width="14" height="12" fill="#111"/>
+      <rect x="14" y="12" width="14" height="13" fill="#111"/>
+      <rect x="42" y="12" width="14" height="13" fill="#111"/>
+      <rect x="0"  y="25" width="14" height="13" fill="#111"/>
+      <rect x="28" y="25" width="14" height="13" fill="#111"/>
+    </svg>
+    <div class="flag-pole"></div>
+    <div class="flag-label">START</div>
+  `;
+  wrap.appendChild(flagEl);
+
+  /* ── MILESTONES ─────────────────────────────────────── */
+  let lastMonth = '';
+  const todayIdx = getTodayIndex();
+
+  MILESTONES.forEach((m, i) => {
+    const p      = pts[i];
+    const side   = (i % 2 === 0) ? 'left' : 'right';
+    const status = getMilestoneStatus(m.date);
+    const isToday = (status === 'today');
+    // Only highlight if today exactly matches this milestone's date
+    const isHighlighted = isToday;
+
+    /* Month banner */
+    if (m.mL && m.mL !== lastMonth) {
+      lastMonth = m.mL;
+      const mdiv = document.createElement('div');
+      mdiv.className = 'month-divider';
+      mdiv.style.top  = ((p.y - 48) / CH * 100) + '%';
+      mdiv.style.left = '50%';
+      mdiv.textContent = m.mL;
+      wrap.appendChild(mdiv);
+    }
+
+    /* TODAY badge (only for exact today or nearest) */
+    let todayBadgeHtml = '';
+    if (isHighlighted) {
+      todayBadgeHtml = `<div class="today-badge">TODAY</div>`;
+    }
+
+    const todayCircleSize = isHighlighted ? Math.round(circleSize * 1.22) : circleSize;
+
+    const [mon, day] = m.date.split(' ');
+    const el = document.createElement('div');
+
+    // Build class list
+    let classStr = `ms ${side}`;
+    if (status === 'past') classStr += ' ms-past';
+    if (isHighlighted)     classStr += ' ms-today';
+
+    el.className = classStr;
+    el.style.cssText = `
+      left:${(p.x / CW * 100)}%;
+      top:${(p.y / CH * 100)}%;
+      --circle:${todayCircleSize}px;
+      --arm:${armW}px;
+      --lmax:${labelMax}px;
+    `;
+
+    el.innerHTML = `
+      ${isHighlighted ? '<div class="today-pulse-ring" style="--tcolor:' + m.color + '"></div>' : ''}
+      ${isHighlighted ? '<div class="today-glow-ring" style="--tcolor:' + m.color + '"></div>' : ''}
+      <div class="ms-circle" style="background:linear-gradient(135deg,${m.color}ee,${m.color}99);border-color:${isHighlighted ? m.color : m.color+'88'};${isHighlighted ? 'box-shadow:0 0 0 4px '+m.color+'44,0 0 28px '+m.color+'88,0 0 56px '+m.color+'44;' : ''}">
+        <span class="ms-day">${day}</span>
+        <span class="ms-mon">${mon}</span>
+      </div>
+      <div class="ms-arm"></div>
+      <div class="ms-label" style="border-color:${m.color}55;${isHighlighted ? 'border-color:'+m.color+';box-shadow:0 0 12px '+m.color+'55;' : ''}">
+        ${todayBadgeHtml}
+        ${m.title}
+      </div>
+    `;
+
+    el.onclick = () => { playClick(); showDetail(m); };
+    wrap.appendChild(el);
+
+    if (isHighlighted) todayMilestoneEl = el;
+  });
+
+  /* ── TROPHY ──────────────────────────────────────────── */
+  const lp = pts[pts.length - 1];
+  const tEl = document.createElement('div');
+  tEl.className = 'road-trophy';
+  tEl.style.left = (lp.x / CW * 100) + '%';
+  tEl.style.top  = ((lp.y + 60) / CH * 100) + '%';
+  tEl.innerHTML = `
+    <div class="trophy-glow"></div>
+    <div class="trophy-icon" style="font-size:${trophySize}">🏆</div>
+    <div class="trophy-label">YOU DID IT!</div>
+  `;
+  wrap.appendChild(tEl);
+
+  /* Auto-scroll to today's milestone after render */
+  if (todayMilestoneEl) {
+    requestAnimationFrame(() => {
+      setTimeout(() => scrollToToday(), 400);
+    });
+  }
+}
+
+/* ─────────────────────────────────────────────
+   AUTO-SCROLL TO TODAY
+───────────────────────────────────────────── */
+function scrollToToday() {
+  if (!todayMilestoneEl) return;
+  const view = document.getElementById('rm-view');
+  const elRect   = todayMilestoneEl.getBoundingClientRect();
+  const viewRect  = view.getBoundingClientRect();
+  const target    = view.scrollTop + (elRect.top - viewRect.top) - (viewRect.height / 2) + (elRect.height / 2);
+  view.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
+}
+
+/* ─────────────────────────────────────────────
+   AUDIO
+───────────────────────────────────────────── */
+function playClick() {
+  try {
+    const a = document.getElementById('clickSound');
+    a.currentTime = 0;
+    a.play().catch(() => {});
+  } catch(e) {}
+}
+
+/* ─────────────────────────────────────────────
+   DETAIL VIEW
+───────────────────────────────────────────── */
+function showDetail(m) {
+  document.getElementById('rm-view').classList.add('hidden');
+  const dv = document.getElementById('dt-view');
+  dv.classList.remove('hidden');
+  dv.scrollTop = 0;
+
+  const status = getMilestoneStatus(m.date);
+  const statusBadge = status === 'today'
+    ? `<div class="dt-today-badge">🎯 TODAY</div>`
+    : status === 'past'
+    ? `<div class="dt-past-badge">✅ Completed</div>`
+    : '';
+
+  document.getElementById('dtTopTitle').textContent = m.title;
+  document.getElementById('dtHero').innerHTML = `
+    <span class="dt-icon">${m.icon}</span>
+    <div class="dt-badge">
+      <div class="dt-badge-dot" style="background:${m.color}"></div>
+      ${m.type.charAt(0).toUpperCase() + m.type.slice(1)}
+    </div>
+    ${statusBadge}
+    <div class="dt-h2" style="color:${m.color}">${m.title}</div>
+    <div class="dt-date">📅 ${m.date}, 2026 &nbsp;·&nbsp; ${m.sub}</div>
+  `;
+
+  let html = '';
+  if (m.act.length) {
+    html += `<div class="dt-section"><div class="dt-section-label">Today's Activities</div><div class="act-list">`;
+    m.act.forEach(a => {
+      html += `
+        <div class="act-card" style="border-color:${m.color}33;--accent:${m.color};">
+          <span class="act-icon">${a.icon}</span>
+          <div class="act-title">${a.t}</div>
+          ${a.tm ? `<div class="act-time" style="color:${m.color}">⏰ ${a.tm}</div>` : ''}
+        </div>`;
+    });
+    html += `</div></div>`;
+  }
+  if (m.note.length) {
+    html += `<div class="dt-section"><div class="dt-section-label">Notes</div>`;
+    m.note.forEach(n => {
+      const isAccess = n.t === 'Access';
+      html += `
+        <div class="info-card" style="border-color:${m.color}33;">
+          <div class="info-card-icon">${n.icon}</div>
+          <div style="width:100%">
+            <h4>${n.t}</h4><p>${n.d}</p>
+            ${isAccess ? `<a href="https://masterclass.holistictherapistgayathri.com/web/login" target="_blank" rel="noopener" class="tagmango-btn" style="--btn-color:${m.color}">Click here to access Tagmango Portal &#8594;</a>` : ''}
+          </div>
+        </div>`;
+    });
+    html += `</div>`;
+  }
+  document.getElementById('dtBody').innerHTML = html;
+}
+
+function goBack() {
+  document.getElementById('dt-view').classList.add('hidden');
+  document.getElementById('rm-view').classList.remove('hidden');
+}
+
+/* ─────────────────────────────────────────────
+   INIT + RESIZE
+───────────────────────────────────────────── */
+renderRoadmap();
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(renderRoadmap, 150);
+});
+</script>
+</body>
+</html>
