@@ -354,11 +354,13 @@ html, body {
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 5px 10px;
-  white-space: nowrap;
-  max-width: var(--lmax, 130px);
-  overflow: hidden; text-overflow: ellipsis;
+  white-space: normal;
+  max-width: var(--lmax, 140px);
+  min-width: 70px;
+  line-height: 1.35;
   backdrop-filter: blur(10px);
   transition: transform .2s;
+  text-align: center;
 }
 .ms:active .ms-label { transform: scale(0.96); }
 
